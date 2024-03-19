@@ -1,0 +1,79 @@
+{
+    "reviews": [
+      {
+        "reviewId": "4037720",
+        "reviewLink": "https://kibbles.klausapp.com/4037720",
+        "externalLink": "https://app.intercom.io/1997",
+        "firstComment": "A comment about the...",
+        "reviewer": "Cristiano",
+        "reviewerEmail": "cris@gmail.com",
+        "reviewee": "Leo",
+        "revieweeEmail": "leo@gmail.com",
+        "categories": [
+          {
+            "label": "Positive approach",
+            "score": 100
+          }
+        ],
+        "rootCauses": "'All good', 'All good', ''",
+        "score": 100,
+        "created": "2022-12-30T17:03:55.776538Z",
+        "tags": "[BOT-product]",
+        "reviewTime": ""
+      },
+      {
+        "reviewId": "4037721",
+        "reviewLink": "https://kibbles.klausapp.com/4037721",
+        "externalLink": "https://app.intercom.io/1998",
+        "firstComment": "",
+        "reviewer": "Jacek",
+        "reviewerEmail": "jacek@gmail.com",
+        "reviewee": "Placek",
+        "revieweeEmail": "placek@gmail.com",
+        "categories": [
+          {
+            "label": "Tone of Voice",
+            "score": 50
+          },
+          {
+            "label": "Usability",
+            "score": 75
+          },
+          {
+            "label": "Correct language",
+            "score": 25
+          }
+        ],
+        "rootCauses": "'', '', '', '', '', '', '', '', '', '', 'All good'",
+        "score": 50,
+        "created": "2022-12-31T05:22:55.776538Z",
+        "tags": "[]",
+        "reviewTime": ""
+      },
+      {
+        "reviewId": "4037722",
+        "reviewLink": "https://kibbles.klausapp.com/4037722",
+        "externalLink": "https://app.intercom.io/1999",
+        "firstComment": "Smart comment",
+        "reviewer": "Batman",
+        "reviewerEmail": "batman@gmail.com",
+        "reviewee": "Robin",
+        "revieweeEmail": "robin@gmail.com",
+        "categories": [
+          {
+            "label": "Tone of Voice",
+            "score": 40
+          },
+          {
+            "label": "Solution",
+            "score": 80
+          }
+        ],
+        "rootCauses": "",
+        "score": 50,
+        "created": "2022-12-31T23:13:55.776538Z",
+        "tags": "[]",
+        "reviewTime": ""
+      }
+    ]
+  }

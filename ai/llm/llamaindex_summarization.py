@@ -1,5 +1,12 @@
 from llama_index.core import VectorStoreIndex, SimpleDirectoryReader, SummaryIndex
 
+"""
+This code reads a set of documents from a directory and categorizes them as ‘customer support’.
+It then creates an index for the documents and stores it.
+The last part of the code queries the indexed documents for customer support content and outputs a summary response,
+additionally printing relevant sources.
+"""
+
 # load documents
 docs = SimpleDirectoryReader(input_files=['./docs1/doc.csv']).load_data()
 docs[0].metadata['category'] = 'customer support'

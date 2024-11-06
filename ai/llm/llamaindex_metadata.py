@@ -1,5 +1,12 @@
 from llama_index.core import VectorStoreIndex, SimpleDirectoryReader
 
+"""
+This code imports classes from a llama_index module,
+loads and categorizes two types of documents for customer support and marketing respectively.
+It generates a combined index from these categorized documents and saves it.
+Finally, a chat engine is created using this index and a chat session is started.
+"""
+
 # load documents
 docs1 = SimpleDirectoryReader(input_files=['./docs1/doc.csv']).load_data()
 docs2 = SimpleDirectoryReader('docs2').load_data()

@@ -1,6 +1,12 @@
 import google.generativeai as genai
 from Markdown2docx import Markdown2docx
 
+"""
+This code is used to automate the generation of a Project Charter document for a given product idea.
+It uses Google’s generative AI model configured with certain parameters for text generation.
+The generated text is then saved to a markdown file, which is converted and saved as a Word document.
+"""
+
 def generate(api_key, product_idea):
     
     genai.configure(api_key=api_key)

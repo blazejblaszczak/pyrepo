@@ -1,5 +1,13 @@
 from functools import reduce
 
+# FILTER
+# Use range() to generate numbers from 1 to 10 and convert it to a list
+numbers = list(range(1, 11))
+# Use filter() with a lambda function to get only the even numbers
+filtered_numbers = filter(lambda x: x % 2 == 0, numbers)
+# Convert the result to a list and print it
+print(list(filtered_numbers))
+
 # MAP
 # List of numbers
 numbers = list(range(1,6))

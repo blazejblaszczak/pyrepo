@@ -1,4 +1,9 @@
 from bs4 import BeautifulSoup
+from bs4 import Tag, NavigableString
+import requests
+import re
+
+
 # Learning basic BeautifulSoup functionality
 html_doc = """<html><head><title>The Dormouse's story</title></head>
 <body>
@@ -108,3 +113,170 @@ print()
 # Note that, as we mentioned before, a lot of data other than the HTML tags we want will be present. This can be especially
 # confusing when trying to find siblings, as it appears in the document that each of the <a> tags are direct siblings of one another,
 # but in fact are not (according to BeautifulSoup).
+
+
+# In the previous section, we went over some core functionality of BeautifulSoup in context of 
+# a very simple example HTML document. Now we're ready to take our first step into real web scraping
+# by requesting a live webpage, saving it to a file, and feeding it into BeautifulSoup.
+# ETHICAL SCRAPING
+# When deciding what content we'd like to scrape, we should be mindful of the 
+# ethics involved. Every request we make to a web server is going to take up some of its
+# bandwidth, and web scraping projects can involve a lot of requests. Web scraping also has the
+# tendency, if we're not careful, to require a large volume of requests in very quick succession,
+# which can overwhelm web servers. To address this, it is convention for websites to host
+# a file called robots.txt which lays out the site's rules for scraping. Sites are not obligated
+# to allow scraping, and many completely disallow it. If you scrape a site which has explicitly
+# banned the practice, you risk getting your IP blocked, and it is generally not a very 
+# nice thing to do for the health of the whole web scraping ecosystem. The less the desires of site
+# hosts are respected, the less welcoming sites will be for future web scrapers.
+# Going forward, we'll be using Wikipedia as our source for web content. Let's take a look at what 
+# Wikipedia's robots.txt has to say. While Wikipedia does not explicitly ban web scraping in general,
+# we can see here that it does ban specific (usually commercial) scrapers and crawlers which have been
+# poorly behaved in the past. It also gives us the following warning:
+# "Please note: There are a lot of pages on this site, and there are
+# some misbehaved spiders out there that go _way_ too fast. If you're
+# irresponsible, your access to the site may be blocked."
+# So there we have it. As long as we keep our requests to a reasonable rate, we should be good to go.
+# We'll go over some concrete ways to do this, such as rate limiting, as it comes up.
+# REQUESTING A PAGE
+# Now that we're aware of what we're getting ourselves into, let's use the Python requests library to 
+# get an HTML page that we can load into BeautifulSoup. 
+# As an example, we'll be using the Wikipedia page for the Bristlecone pine, a species of tree: https://en.wikipedia.org/wiki/Bristlecone_pine
+# request = requests.get("https://en.wikipedia.org/wiki/Bristlecone_pine") # GET request
+# print(request.text)
+# A great way to lessen the load on web servers when scraping is to minimize the number of times we need to send requests.
+# Rather than request the page each time we run the program, it will be best to save it to a local file.
+# with open("./html_docs/bristlecone.html", "w", encoding="utf-8") as f:
+#     f.write(request.text)
+# Now we can comment out our GET request code and load in the HTML from our new file.
+# GET request code
+def get_html(url, path):
+    request = requests.get(url) # GET request
+    print(request.text)    
+    with open(path, "w", encoding="utf-8") as f:
+        f.write(request.text)
+# Read from file.
+with open("./html_docs/bristlecone.html", "r", encoding="utf-8") as f:
+    html = f.read()
+# print(html)
+# And that's all! We're ready to load the raw HTML into BeautifulSoup.
+soup = BeautifulSoup(html, "html.parser")
+print(soup.title, "\n")
+# Taking a look at this article's HTML, we can see that it is very complex and difficult to read manually.
+# This is where another important web scraping tool comes in - our browser.
+# When scraping from a real webpage, inspecting the HTML via browser tools allows us to get our bearings.
+# I'll be using Chrome for this example, but other major browsers have their own equivalents of these tools.
+# --- GET A LIST OF SECTION HEADINGS. ---
+# Upon inspection, we realize the actual text is not contained in the <h2> tag but in a <span> tag that is a child of it.
+print(soup.find_all("span"), "\n")
+# We realize we need to specify class="mw-headline"
+section_headings = soup.find_all("span", attrs={"class": "mw-headline"})
+print(section_headings, "\n")
+section_headings = [span.string for span in section_headings] # Clean up
+print(section_headings, "\n")
+# NavigableString type. These are not your normal strings!!
+print(type(section_headings[0]))
+# They are still bs4 objects. Check this out.
+print(section_headings[0].parent, "\n")
+# --- PARSE THE INFOBOX ---
+#   - Create a dictionary out of the scientific classification section
+# Upon inspection in the browser, we see that the article infobox is defined at the top level by a <table> tag with the class
+# "infobox biota". Let's grab that to start with.
+infobox = soup.find("table", attrs={"class": "infobox biota"})
+print(infobox, "\n")
+# Let's take a closer look at how the infobox is structured in the inspector.
+# We have a <table> with a <tbody> directly beneath and many <tr> (table row) tags below that.
+# Each table row has one or more <td> (table data) tags.
+# When scraping, we're always on the lookout for formatting patterns that can help us naturally filter
+# data we want. Let's say we want to create a data structure of the taxonomy categories. We can see there is
+# actually a consistent "identifier" for what we want. Only the taxonomy labels contain a ":" character.
+# Let's use that fact to filter out what we want.
+taxonomy = {}
+# We can define our own functions with which to filter tags with find_all()
+def taxonomy_filter(tag): 
+    return ":" in tag.text and tag.name == "td"
+filtered = infobox.find_all(taxonomy_filter) 
+print(filtered, "\n")
+print([str(tag.text).strip().replace(":", "") for tag in filtered]) # Clean up
+# What we wanted, though, was a dictionary, so let's go ahead and do that.
+for tag in filtered:
+    sibling = tag.next_sibling.next_sibling # Note we need to do two .next_sibling, the first one is just white space!
+    print(sibling.text.strip())
+    taxonomy[tag.text.strip().replace(":", "")] = sibling.text.strip()
+print("\n", taxonomy) # Note that since there were multiple 'clade' entries, one was overwritten. Since this is just an example, we'll let it be.
+print(taxonomy["Kingdom"], "\n")
+# Note that there are usually many possible ways to get at the data we want, and there is no one "correct"
+# answer, although certain solutions may be more efficient, save time, or be simpler to write. For instance,
+# another way we could have done this is: 
+# This method uses another property of the sections we want - the number of child elements == 4.
+def another_taxonomy_filter(tag):
+    return tag.name == "tr" and len(list(tag.children)) == 4
+print("Second method: ", infobox.find_all(another_taxonomy_filter), "\n")
+# Hopefully you're beginning to see how powerful this can be. Using the code we just wrote, we could potentially scrape
+# taxonomy data from many different articles, not just this one. (Show example)
+# Let's do a few more exercises.
+# --- FIND ALL LINKS IN BODY TEXT ---
+# While it would be easy enough to find all of the <a> tags in the document, this would leave us with a 
+# huge number of links that aren't necessarily relevant to us - things like the Wikipedia nav bar and side bar,
+# Wikimedia links, citations, etc.
+# We can see that the body text is all contained in <p> tags, so let's narrow our search down to these first.
+p_content = soup.find_all("p")
+print(p_content, "\n")
+# Now let's get all the links (anchor tags) in the body content.
+# Note that we have to loop through the different <p> tags and then concatenate all of their
+# <a> tags into a final list.
+body_links = []
+for p in p_content:
+    body_links += p.find_all("a")
+print(body_links, "\n")
+# We need to filter out the in-text citation links (hrefs all contain "#cite")
+# The filter() function is an extremely useful built in Python function that allows us to filter lists on a function.
+# Since this is one off, inline function, we're using a lambda.
+body_links = list(filter(lambda a: "#cite" not in a['href'] and "Citation needed" not in a['title'], body_links))
+print(body_links, "\n")
+# Let's put it into a usable dictionary format with the name of the link as the key and the link itself as the value.
+links = {}
+for a in body_links:
+    links[a['title']] = 'https://en.wikipedia.org' + a['href']
+print(links, "\n")
+print("Species: ", links["Species"], "\n")
+# And check it out, we can follow all these links directly from VSCode! In more advanced web scraping we can
+# use links like this to traverse other pages and start to really aggregate data in a way that would take a very long time by hand.
+# --- FIND ALL IMAGES ---
+# Hopefully you're starting to get the hang of how this works. We start with an objective and progressively narrow down our
+# searches. Let's see how images are handled on Wikipedia.
+imgs = soup.find_all("img")
+print(imgs, "\n")
+# Some of these are, for instance, the Wikipedia logo. Let's try and get it a bit more specific.
+for i in imgs:
+    if 'class' in i.attrs:
+        print(i['class'])
+    else:
+        print(i)
+print()
+# We can see we need those images with class 'mw-file-element'. There are also a couple images without a 'class' attribute
+# which are causing trouble.
+imgs = list(filter(lambda img: 'class' in img.attrs, imgs)) # Prevent key errors
+imgs = list(filter(lambda img: img['class'][0] == 'mw-file-element', imgs)) # Important note! img['class'] returns a list!
+print(imgs, '\n')
+# Try downloading one.
+def download_image(url, path):
+    response = requests.get(url)
+    with open(path, "wb") as f: # Note we have to specify write bytes
+        f.write(response.content)
+# download_image('https:' + imgs[0]['src'], './image.png')
+# You may notice that the image we got was quite low res. Wikimedia is not terribly straightforward to grab images from,
+# so we won't go into detail of how to access the higher resolution versions here.
+# --- GENERATE LIST OF CITATIONS ---
+# Let's say we wanted to collect a list of citations that are used in the article.
+# Looking at the browser inspector we can see the citations are contained in an <ol> tag with the class "references"
+citations = soup.find("ol", attrs={"class": "references"})
+print(citations, '\n')
+# We can see that a lot of the actual citation data is contained several tags down in a <cite> tag. So let's get all of those.
+cite_tags = citations.find_all("cite")
+print(cite_tags, '\n')
+# Let's check out the text available in the cite tags.
+print(cite_tags[0].text)
+# Filter for only citations that list an ISBN or a DOI.
+isbn_doi = [c.text for c in cite_tags if 'ISBN' in c.text or 'doi' in c.text]
+print(isbn_doi)

@@ -1,0 +1,141 @@
+#:kivy 1.11.1
+
+<GameScreen>:
+    canvas:
+        Color:
+            rgba: 0, 0, 0, 1
+        Rectangle:
+            pos: root.x, root.y
+            size: root.width, root.height
+        Color:
+            rgba: 1, 1, 1, 1
+        Rectangle:
+            pos: root.x + 5, root.y + 5
+            size: root.width - 10, root.height - 10
+    FloatLayout:
+        pos: 0, 0
+        size: root.width, root.height
+
+        Label:
+            pos_hint: {'x': .1, 'y': .9}
+            size_hint: .8, .1
+            text_size: self.size
+            text: self.parent.parent.correct_answer_text
+            font_size: 60
+            bold: True
+            color: 0, 0, 0, 1
+
+        GridLayout:
+            pos_hint: {'x': .1, 'y': .25}
+            size_hint: None, None
+            size: root.width * .8, root.width * .8
+            cols: 2
+
+            ImageBox:
+                image_name: self.get_image_path(self.parent.parent.parent.display_image_names[0])
+                index: 0
+            ImageBox:
+                image_name: self.get_image_path(self.parent.parent.parent.display_image_names[1])
+                index: 1
+            ImageBox:
+                image_name: self.get_image_path(self.parent.parent.parent.display_image_names[2])
+                index: 2
+            ImageBox:
+                image_name: self.get_image_path(self.parent.parent.parent.display_image_names[3])
+                index: 3
+
+        ProgressBar:
+            pos_hint: {'x': .1, 'y': .05}
+            size_hint: .8, .1
+
+<ImageBox>:
+    canvas:
+        Color:
+            rgba: 0, 0, 0, 1
+        Rectangle:
+            pos: self.x, self.y
+            size: self.width, self.height
+        Color:
+            rgba: 1, 1, 1, 1
+        Rectangle:
+            pos: self.x + 5, self.y + 5
+            size: self.width - 10, self.height - 10
+    Button:
+        pos: root.x + 5, root.y + 5
+        size: root.width - 10, root.height - 10
+        background_normal: str(False)
+        on_press: self.parent.parent.parent.parent.make_selection(self.parent.index)
+    Image:
+        source: self.parent.image_name
+        pos: root.x + 5, root.y + 5
+        size: root.width - 10, root.height - 10
+
+<ProgressBar>:
+    canvas:
+        Color:
+            rgba: 0, 0, 0, 1
+        Rectangle:
+            pos: self.x, self.y
+            size: self.width, self.height
+        Color:
+            rgba: 1, 1, 1, 1
+        Rectangle:
+            pos: self.x + 5, self.y + 5
+            size: self.width - 10, self.height - 10
+        Color:
+            rgba: 0, 0.5, 0.2, 1
+        Rectangle:
+            pos: self.x + 5, self.y + 5
+            size: self.parent.parent.bar_width, self.height - 10
+        Color:
+            rgba: 1, 1, 1, 1
+        BorderImage:
+            pos: self.width - 40, self.y + 20
+            size: self.height - 40, self.height - 40
+            source: 'images/trophy.png'
+
+<EndGameScreen>:
+    canvas:
+        Color:
+            rgba: 0, 0, 0, 1
+        Rectangle:
+            pos: self.x, self.y
+            size: self.width, self.height
+        Color:
+            rgba: 1, 1, 1, 1
+        Rectangle:
+            pos: self.x + 5, self.y + 5
+            size: self.width - 10, self.height - 10
+    FloatLayout:
+        Label:
+            pos_hint: {'x': .1, 'y': .8}
+            size_hint: .8, .1
+            color: 0, 0, 0, 1
+            bold: True
+            text_size: self.size
+            halign: 'left'
+            font_size: 50
+            text: "Time's up!"
+        Label:
+            pos_hint: {'x': .1, 'y': .55}
+            size_hint: .8, .1
+            color: 0, 0, 0, 1
+            bold: True
+            text_size: self.size
+            halign: 'left'
+            font_size: 30
+            text: 'Your score: ' + str(self.parent.parent.final_score)
+        Label:
+            pos_hint: {'x': .1, 'y': .4}
+            size_hint: .8, .1
+            color: 0, 0, 0, 1
+            bold: True
+            text_size: self.size
+            halign: 'left'
+            font_size: 30
+            text: 'High score: ' + str(self.parent.parent.high_score)
+        Button:
+            pos_hint: {'x': .1, 'y': .1}
+            size_hint: .8, .15
+            text: 'Play Again?'
+            on_press: self.parent.parent.dismiss()
